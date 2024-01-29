@@ -1,0 +1,4 @@
+FROM openjdk:11
+EXPOSE 8888
+ADD target/ApiGateway-1.0.jar ApiGateway.jar
+ENTRYPOINT ["java","-jar","ApiGateway.jar"]

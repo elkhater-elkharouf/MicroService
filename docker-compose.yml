@@ -1,0 +1,98 @@
+version: "24.0.6"
+services:
+  # Eureka
+  eurekaServer:
+    build:
+      context: ./EurekaServer
+    ports:
+      - "8761:8761"
+    image: "eurekaserver"
+    networks:
+      - mynetwork  # Ajoutez le service à votre réseau personnalisé
+
+  # Keycloak
+  keycloak:
+    build:
+      context: ./key/  # Mettez le chemin correct vers le Dockerfile de Keycloak
+    ports:
+      - "8180:8080"
+    image: "mon-keycloak"
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+    networks:
+      - mynetwork  # Ajoutez le service à votre réseau personnalisé
+
+  # serviceoffreemploi
+  serviceoffreemploi:
+    build:
+      context: ./serviceoffreemploi
+    ports:
+      - "8881:8081"
+    image: "serviceoffreemploi"
+    depends_on:
+      - eurekaServer
+      - keycloak
+    environment:
+      - eureka.client.service-url.defaultZone=http://eurekaServer:8761/eureka/
+      - KEYCLOAK_REALM=jobBoard
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8180/auth  # Use the service name as the hostname
+      - KEYCLOAK_RESOURCE=serviceoffreemploi
+      - KEYCLOAK_PUBLIC_CLIENT=true
+    networks:
+      - mynetwork
+
+  # serviceproduit
+  PRODUIT:
+    build:
+      context: ./ProduitCategorie
+    ports:
+      - "8766:8093"
+    image: "produitcategorie"
+    depends_on:
+      - eurekaServer
+      - keycloak
+    environment:
+      - eureka.client.service-url.defaultZone=http://eurekaServer:8761/eureka/
+      - KEYCLOAK_REALM=jobBoard
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8180/auth  # Use the service name as the hostname
+      - KEYCLOAK_RESOURCE=serviceoffreemploi
+      - KEYCLOAK_PUBLIC_CLIENT=true
+    networks:
+      - mynetwork
+
+  # serviceoffreemploi
+  evenement:
+    build:
+      context: ./Evenement
+    ports:
+      - "8097:8097"
+    image: "evenement"
+    depends_on:
+      - eurekaServer
+      - keycloak
+    environment:
+      - eureka.client.service-url.defaultZone=http://eurekaServer:8761/eureka/
+      - KEYCLOAK_REALM=jobBoard
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8180/auth  # Use the service name as the hostname
+      - KEYCLOAK_RESOURCE=serviceoffreemploi
+      - KEYCLOAK_PUBLIC_CLIENT=true
+    networks:
+      - mynetwork
+
+  # Gateway
+  gateway:
+    build:
+      context: ./ApiGateway
+    ports:
+      - "8888:9999"
+    image: "apigateway"
+    depends_on:
+      - eurekaServer
+    environment:
+      - eureka.client.service-url.defaultZone=http://eurekaServer:8761/eureka/
+    networks:
+      - mynetwork  # Ajoutez le service à votre réseau personnalisé
+
+networks:
+  mynetwork:  # Définissez votre réseau personnalisé

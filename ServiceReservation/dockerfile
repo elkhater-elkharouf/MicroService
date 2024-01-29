@@ -1,0 +1,4 @@
+FROM openjdk:11
+EXPOSE 8002
+ADD target/ServiceReservation-1.0.jar ServiceReservation-1.0.jar
+ENTRYPOINT ["java","-jar","ServiceReservation-1.0.jar"]

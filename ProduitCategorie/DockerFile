@@ -1,0 +1,4 @@
+FROM openjdk:8
+EXPOSE 8766
+ADD target/ProduitCategorie-0.0.1-SNAPSHOT.jar ProduitCategorie.jar
+ENTRYPOINT ["java","-jar","ProduitCategorie.jar"]
